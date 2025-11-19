@@ -4,13 +4,15 @@ import random
 # ------------------ CONFIGURACIÓN BÁSICA ------------------ #
 st.set_page_config(page_title="Ecuaciones de primer grado", page_icon="🧮")
 
-# CSS para fondo con temática de pizarra + estilos
+# NOTA: coloca una imagen llamada 'bcp.jpg' en el mismo repositorio que este archivo.
+# Puede ser la fachada del BCP, logo, etc.
+
 page_bg = """
 <style>
 .stApp {
     background-image:
-        linear-gradient(rgba(0,0,0,0.60), rgba(0,0,0,0.75)),
-        url("https://images.unsplash.com/photo-1523580846011-d3a5bc25702b");
+        linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.80)),
+        url("bcp.jpg");
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -28,10 +30,10 @@ h1, h2, h3, h4, h5, h6, p, label {
 
 /* Tarjeta central semi-transparente */
 .main-card {
-    background: rgba(15, 23, 42, 0.92); /* azul oscuro semi-transparente */
+    background: rgba(15, 23, 42, 0.94);
     padding: 2rem;
     border-radius: 1.2rem;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
 /* Botones más bonitos */
@@ -55,8 +57,10 @@ st.markdown(page_bg, unsafe_allow_html=True)
 st.markdown('<div class="main-card">', unsafe_allow_html=True)
 
 st.title("🧮 Taller de Ecuaciones de Primer Grado")
-st.write("Resuelve la ecuación y comprueba si tu respuesta es correcta. "
-         "Si aciertas, aparecerá un emoticón de aprobación 😄")
+st.write(
+    "Resuelve la ecuación y comprueba si tu respuesta es correcta. "
+    "Si aciertas, aparecerá un emoticón de aprobación 😄"
+)
 
 # Generar una ecuación y guardarla en la sesión
 if "equation" not in st.session_state:
@@ -112,7 +116,7 @@ if nueva:
     x_real = random.randint(-10, 10)
     c = a * x_real + b
     st.session_state.equation = {"a": a, "b": b, "c": c, "x_real": x_real}
-    st.experimental_rerun()
+    st.rerun()   # <--- AQUÍ EL CAMBIO CLAVE
+    # antes: st.experimental_rerun()
 
 st.markdown('</div>', unsafe_allow_html=True)
-
