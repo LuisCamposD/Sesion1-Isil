@@ -11,8 +11,8 @@ page_bg = """
 <style>
 .stApp {
     background-image:
-        linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.80)),
-        url("bcp.jpg");
+        linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.70)),
+        url("https://raw.githubusercontent.com/LuisCamposD/Sesion1-Isil/main/bcp.jpg");
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
