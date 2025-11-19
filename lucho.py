@@ -4,7 +4,7 @@ import random
 # ------------------ CONFIGURACIÓN BÁSICA ------------------ #
 st.set_page_config(page_title="Ecuaciones de primer grado", page_icon="🧮")
 
-BCP_BG_URL = "https://raw.githubusercontent.com/LuisCamposD/Sesion1-Isil/main/bcpp.jpg"
+BCP_BG_URL = "https://raw.githubusercontent.com/LuisCamposD/Sesion1-Isil/main/bcp.jpg"
 
 page_bg = f"""
 <style>
