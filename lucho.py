@@ -4,7 +4,6 @@ import random
 # ------------------ CONFIGURACIÓN BÁSICA ------------------ #
 st.set_page_config(page_title="Ecuaciones de primer grado", page_icon="🧮")
 
-# URL de la imagen del BCP en tu repo GitHub (ajusta si cambias el nombre)
 BCP_BG_URL = "https://raw.githubusercontent.com/LuisCamposD/Sesion1-Isil/main/bcp.jpg"
 
 page_bg = f"""
@@ -79,7 +78,6 @@ def reset_game():
     st.session_state.attempts_left = MAX_ATTEMPTS
     st.session_state.equation = generar_ecuacion(st.session_state.difficulty)
 
-
 # ------------------ ESTADO INICIAL ------------------ #
 if "difficulty" not in st.session_state:
     st.session_state.difficulty = "Fácil"
@@ -93,15 +91,55 @@ if "attempts_left" not in st.session_state:
 if "equation" not in st.session_state:
     st.session_state.equation = generar_ecuacion(st.session_state.difficulty)
 
+if "last_feedback_type" not in st.session_state:
+    st.session_state.last_feedback_type = None
+    st.session_state.last_feedback_msg = ""
+
+# nombre del jugador
+if "player_name" not in st.session_state:
+    st.session_state.player_name = ""
+if "name_confirmed" not in st.session_state:
+    st.session_state.name_confirmed = False
+
 # ------------------ UI PRINCIPAL ------------------ #
 st.markdown('<div class="main-card">', unsafe_allow_html=True)
 
 st.title("🧮 Taller de Ecuaciones de Primer Grado")
+
+# --- PANTALLA DE NOMBRE (ANTES DE EMPEZAR) --- #
+if not st.session_state.name_confirmed:
+    st.write(
+        "Antes de comenzar, ingresa tu **nombre** para registrar tu puntaje:"
+    )
+    nombre = st.text_input(
+        "Nombre del jugador:",
+        value=st.session_state.player_name,
+        placeholder="Ejemplo: Lucho"
+    )
+    col_start, _ = st.columns(2)
+    with col_start:
+        empezar = st.button("🎮 Empezar juego")
+
+    if empezar:
+        nombre_limpio = nombre.strip()
+        if nombre_limpio:
+            st.session_state.player_name = nombre_limpio
+            st.session_state.name_confirmed = True
+            reset_game()
+            st.rerun()
+        else:
+            st.warning("Por favor ingresa un nombre para empezar.")
+
+    st.markdown('</div>', unsafe_allow_html=True)
+    st.stop()
+
+# --- DESCRIPCIÓN DEL JUEGO (YA CON NOMBRE) --- #
 st.write(
+    f"Bienvenido, **{st.session_state.player_name}** 👋\n\n"
     "Tienes **10 intentos** para lograr el puntaje máximo de **100 puntos**.\n\n"
-    "- Respuesta correcta: **+10 puntos** (dependa del intento).\n"
+    "- Respuesta correcta: **+10 puntos**.\n"
     "- Respuesta incorrecta: **−5 puntos**.\n"
-    "- Cuando aciertas, verás **aplausos y celebración** 👏🎉"
+    "- Cuando aciertas, verás **aplausos y celebración** 👏🎉 y pasarás a la siguiente ecuación."
 )
 
 # --- Selección de dificultad --- #
@@ -120,13 +158,22 @@ if nivel_seleccionado != st.session_state.difficulty:
     st.rerun()
 
 # --- Mostrar marcador --- #
-col_score, col_attempts = st.columns(2)
+col_name, col_score, col_attempts = st.columns([2, 1, 1])
+with col_name:
+    st.write(f"**Jugador:** {st.session_state.player_name}")
 with col_score:
     st.metric("Puntaje", f"{st.session_state.score} / {MAX_SCORE}")
 with col_attempts:
     st.metric("Intentos restantes", st.session_state.attempts_left)
 
 st.progress((MAX_ATTEMPTS - st.session_state.attempts_left) / MAX_ATTEMPTS)
+
+# --- Mostrar feedback de la jugada anterior (si hay) --- #
+if st.session_state.last_feedback_type == "success":
+    st.success(st.session_state.last_feedback_msg)
+    st.balloons()
+    st.session_state.last_feedback_type = None
+    st.session_state.last_feedback_msg = ""
 
 st.markdown("---")
 
@@ -171,7 +218,7 @@ if nueva_partida:
     reset_game()
     st.rerun()
 
-# Nueva ecuación sin resetear puntaje/ intentos
+# Nueva ecuación manual (sin tocar puntaje/ intentos)
 if nueva_ecuacion:
     st.session_state.equation = generar_ecuacion(st.session_state.difficulty)
     st.rerun()
@@ -184,20 +231,26 @@ if verificar:
         st.session_state.attempts_left -= 1
 
         if abs(x_usuario - x_real) < 1e-6:
-            # Correcto
+            # Correcto: sumamos puntos y pasamos a la siguiente ecuación
             st.session_state.score = min(
                 MAX_SCORE, st.session_state.score + POINTS_PER_CORRECT
             )
-            st.success(f"✅ ¡Resultado correcto! x = {x_real} 👏👏👏")
-            st.balloons()  # celebración tipo aplausos
+
+            # guardamos feedback para mostrarlo después del rerun
+            st.session_state.last_feedback_type = "success"
+            st.session_state.last_feedback_msg = f"✅ ¡Resultado correcto! x = {x_real} 👏👏👏"
+
+            # generamos nueva ecuación y recargamos
+            st.session_state.equation = generar_ecuacion(st.session_state.difficulty)
+            st.rerun()
         else:
-            # Incorrecto
+            # Incorrecto: restamos puntos, pero mantenemos la misma ecuación
             st.session_state.score = max(
                 0, st.session_state.score - POINTS_PENALTY_WRONG
             )
             st.error("❌ Aún no es correcto. Pierdes 5 puntos, intenta otra vez 😉")
 
-        # Si ya se acabaron los intentos, mensaje final
+        # Si ya se acabaron los intentos, mensaje final (solo si no se hizo rerun por acierto)
         if st.session_state.attempts_left == 0:
             st.info(
                 f"🏁 Fin de la partida. Tu puntaje final es **{st.session_state.score} / {MAX_SCORE}**.\n\n"
